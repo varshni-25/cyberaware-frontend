@@ -1,3 +1,4 @@
+import { QRCodeSVG } from "qrcode.react";
 import AuthPage from "./components/AuthPage";
 import { apiFetch, getToken, clearToken } from "./lib/api";
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -1363,26 +1364,8 @@ function CyberIDPage({ student }: { student: StudentData }) {
   const badgeIcon = completed === 0 ? "🔰" : completed < 5 ? "🔍" : completed < 10 ? "🛡️" : completed < 15 ? "⚔️" : "🏆"
   const badgeColor = completed === 0 ? "#8892b0" : completed < 5 ? "#00d4ff" : completed < 10 ? "#00ff9d" : completed < 15 ? "#a855f7" : "#f59e0b"
 
-  const QrCode = () => (
-    <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-      {/* QR-like SVG pattern */}
-      <rect width="80" height="80" fill="transparent" />
-      {/* Position detection patterns */}
-      <rect x="4" y="4" width="22" height="22" rx="2" fill="none" stroke="#00d4ff" strokeWidth="2" />
-      <rect x="8" y="8" width="14" height="14" rx="1" fill="#00d4ff" opacity="0.6" />
-      <rect x="54" y="4" width="22" height="22" rx="2" fill="none" stroke="#00d4ff" strokeWidth="2" />
-      <rect x="58" y="8" width="14" height="14" rx="1" fill="#00d4ff" opacity="0.6" />
-      <rect x="4" y="54" width="22" height="22" rx="2" fill="none" stroke="#00d4ff" strokeWidth="2" />
-      <rect x="8" y="58" width="14" height="14" rx="1" fill="#00d4ff" opacity="0.6" />
-      {/* Data modules */}
-      {[30,34,38,42,46,50,54,58,62,66,30,34,38,46,54,62].map((x, i) => (
-        <rect key={i} x={x} y={30 + (i % 5) * 6} width="4" height="4" fill="#00d4ff" opacity={0.3 + (i % 3) * 0.2} />
-      ))}
-      {[8,14,20,8,20,8,14].map((x, i) => (
-        <rect key={`d${i}`} x={x} y={30 + i * 6} width="4" height="4" fill="#00d4ff" opacity={0.4} />
-      ))}
-    </svg>
-  )
+  
+
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
@@ -1465,7 +1448,12 @@ function CyberIDPage({ student }: { student: StudentData }) {
               </div>
               <div className="text-right">
                 <div className="text-[#8892b0] text-xs font-mono-jet mb-2">VERIFICATION QR</div>
-                <QrCode />
+                <QRCodeSVG
+  value={`https://cyberaware-hub.netlify.app/verify?name=${encodeURIComponent(student.name)}&joined=${student.joinDate}&xp=${student.xp}`}
+  size={80}
+  bgColor="transparent"
+  fgColor="#00d4ff"
+/>
               </div>
             </div>
           </div>
