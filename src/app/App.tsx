@@ -1451,7 +1451,7 @@ function CyberIDPage({ student }: { student: StudentData }) {
                 <QRCodeSVG
   value={`CyberAware Certificate\nName: ${student.name}\nLevel: ${getLevelName(student.xp)}\nLessons Completed: ${completed}/18\nXP: ${student.xp}\nIssued: ${student.joinDate}`}
   size={160}
-  bgColor="transparent"
+  bgColor="#ffffff"
   fgColor="#00d4ff"
 />
               </div>
