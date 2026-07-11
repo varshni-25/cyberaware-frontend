@@ -1455,7 +1455,6 @@ function CyberIDPage({ student }: { student: StudentData }) {
   fgColor="#000000"
   marginSize={4}
 />
-                />
               </div>
             </div>
           </div>
