@@ -11,7 +11,7 @@ import {
   Cpu, ArrowRight, Home, ExternalLink, Hash, Download, CreditCard,
   Layers, Search, Server, Fingerprint, ShieldCheck,
   MessageSquare, CircleCheck, CircleX, Lightbulb, Play, RotateCcw,
-  Sparkles, GraduationCap, Terminal, Radio, HelpCircle
+  Sparkles, GraduationCap, Terminal, Radio, HelpCircle, LogOut
 } from "lucide-react"
 import {
   RadarChart, Radar as RadarViz, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -1452,7 +1452,7 @@ function CyberIDPage({ student }: { student: StudentData }) {
   value={`CyberAware Certificate\nName: ${student.name}\nLevel: ${getLevelName(student.xp)}\nLessons Completed: ${completed}/18\nXP: ${student.xp}\nIssued: ${student.joinDate}`}
   size={160}
   bgColor="#ffffff"
-  fgColor="#00d4ff"
+  fgColor="#000000"
 />
               </div>
             </div>
@@ -1714,15 +1714,31 @@ function ResourcesPage() {
             </h3>
             <div className="grid sm:grid-cols-3 gap-4">
               {items.map(({ name, url, desc, icon: Icon }) => (
-                <GlassCard key={name} className="hover-glow">
-                  <Icon className="w-6 h-6 text-[#00d4ff] mb-3" />
-                  <h4 className="font-exo font-bold text-white text-sm mb-1">{name}</h4>
-                  <p className="text-[#8892b0] text-xs mb-3">{desc}</p>
-                  <div className="flex items-center gap-1 text-[#00d4ff] text-xs font-mono-jet">
-                    <ExternalLink className="w-3 h-3" />{url}
-                  </div>
-                </GlassCard>
-              ))}
+  <a
+    key={name}
+    href={`https://${url}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{ textDecoration: "none" }}
+  >
+    <GlassCard className="hover-glow">
+      <Icon className="w-6 h-6 text-[#00d4ff] mb-3" />
+
+      <h4 className="font-exo font-bold text-white text-sm mb-1">
+        {name}
+      </h4>
+
+      <p className="text-[#8892b0] text-xs mb-3">
+        {desc}
+      </p>
+
+      <div className="flex items-center gap-1 text-[#00d4ff] text-xs font-mono-jet">
+        <ExternalLink className="w-3 h-3" />
+        {url}
+      </div>
+    </GlassCard>
+  </a>
+))}
             </div>
           </div>
         ))}
@@ -1760,6 +1776,8 @@ function ResourcesPage() {
 function AboutPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" })
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState("")
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
       <SectionHeader title="About This Platform" subtitle="A student-focused cybersecurity awareness learning environment." tag="About" />
@@ -1814,8 +1832,26 @@ function AboutPage() {
                 rows={4}
                 className="w-full px-4 py-3 rounded-xl bg-[#0d1f38] border border-[#00d4ff22] text-[#ccd6f6] placeholder-[#8892b0] focus:outline-none focus:border-[#00d4ff] text-sm resize-none" />
             </div>
-            <GlowButton onClick={() => setSent(true)} className="w-full justify-center">
-              <MessageSquare className="w-4 h-4" /> Send Message
+            {error && <p style={{ color: "#ef4444", fontSize: "0.875rem" }}>{error}</p>}
+            <GlowButton
+              onClick={async () => {
+                setError("")
+                setSending(true)
+                try {
+                  await apiFetch("/contact", {
+                    method: "POST",
+                    body: JSON.stringify(form),
+                  })
+                  setSent(true)
+                } catch (err: any) {
+                  setError(err.message || "Could not send message. Please try again.")
+                } finally {
+                  setSending(false)
+                }
+              }}
+              className="w-full justify-center"
+            >
+              {sending ? "Sending..." : <><MessageSquare className="w-4 h-4" /> Send Message</>}
             </GlowButton>
           </div>
         </GlassCard>
@@ -1827,7 +1863,7 @@ function AboutPage() {
 // ─────────────────────────────────────────────
 // NAVBAR
 // ─────────────────────────────────────────────
-function Navbar({ currentPage, onNavigate, student }: { currentPage: Page; onNavigate: (p: Page) => void; student: StudentData }) {
+ function Navbar({ currentPage, onNavigate, student, onLogout }: { currentPage: Page; onNavigate: (p: Page) => void; student: StudentData; onLogout: () => void }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const navItems: { id: Page; label: string; icon: React.ElementType }[] = [
     { id: "home", label: "Home", icon: Home },
@@ -1863,7 +1899,13 @@ function Navbar({ currentPage, onNavigate, student }: { currentPage: Page; onNav
               <Zap className="w-3.5 h-3.5 text-[#f59e0b]" />
               <span className="font-mono-jet text-[#f59e0b] text-xs font-bold">{student.xp} XP</span>
             </div>
-            <button onClick={() => setMobileOpen(o => !o)} className="lg:hidden p-2 text-[#8892b0] hover:text-white">
+             <button
+    onClick={onLogout}
+    className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-exo font-bold text-[#8892b0] hover:text-[#ef4444] transition-colors border border-[#ffffff11] hover:border-[#ef444433]"
+  >
+    Log Out
+  </button>
+  <button onClick={() => setMobileOpen(o => !o)} className="lg:hidden p-2 text-[#8892b0] hover:text-white">
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
@@ -1871,17 +1913,21 @@ function Navbar({ currentPage, onNavigate, student }: { currentPage: Page; onNav
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden glass-strong border-t border-[#00d4ff12] px-6 py-4">
-          <div className="grid grid-cols-2 gap-2">
-            {navItems.map(({ id, label, icon: Icon }) => (
-              <button key={id} onClick={() => { onNavigate(id); setMobileOpen(false) }}
-                className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-exo font-bold transition-all ${currentPage === id ? "bg-[rgba(0,212,255,0.15)] text-[#00d4ff]" : "text-[#8892b0] hover:text-white"}`}>
-                <Icon className="w-4 h-4" />{label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+  <div className="lg:hidden glass-strong border-t border-[#00d4ff12] px-6 py-4">
+    <div className="grid grid-cols-2 gap-2">
+      {navItems.map(({ id, label, icon: Icon }) => (
+        <button key={id} onClick={() => { onNavigate(id); setMobileOpen(false) }}
+          className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-exo font-bold transition-all ${currentPage === id ? "bg-[rgba(0,212,255,0.15)] text-[#00d4ff]" : "text-[#8892b0] hover:text-white"}`}>
+          <Icon className="w-4 h-4" />{label}
+        </button>
+      ))}
+      <button onClick={() => { onLogout(); setMobileOpen(false) }}
+        className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-exo font-bold text-[#ef4444] hover:bg-[rgba(239,68,68,0.1)] transition-all">
+        <LogOut className="w-4 h-4" />Log Out
+      </button>
+    </div>
+  </div>
+)}
     </nav>
   )
 }
@@ -1993,6 +2039,7 @@ export default function App() {
   }
 
   const handleLogout = () => {
+     console.log("Logout clicked!")
     clearToken()
     setStudent(null)
     setPage("auth")
@@ -2047,8 +2094,7 @@ export default function App() {
     <>
       <style dangerouslySetInnerHTML={{ __html: GLOBAL_STYLES }} />
       <div ref={topRef} className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Inter, sans-serif" }}>
-        <Navbar currentPage={page} onNavigate={navigate} student={student} />
-
+        <Navbar currentPage={page} onNavigate={navigate} student={student} onLogout={handleLogout} />
         <main>
           {page === "home" && (
             <>
