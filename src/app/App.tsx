@@ -1,4 +1,4 @@
-import { QRCodeSVG } from "qrcode.react";
+import { toPng } from "html-to-image";
 import AuthPage from "./components/AuthPage";
 import { apiFetch, getToken, clearToken } from "./lib/api";
 import { useState, useEffect, useRef, useMemo } from "react"
@@ -1363,7 +1363,20 @@ function CyberIDPage({ student }: { student: StudentData }) {
   const awarenessLevel = completed === 0 ? "Novice" : completed < 5 ? "Explorer" : completed < 10 ? "Defender" : completed < 15 ? "Guardian" : "Sentinel"
   const badgeIcon = completed === 0 ? "🔰" : completed < 5 ? "🔍" : completed < 10 ? "🛡️" : completed < 15 ? "⚔️" : "🏆"
   const badgeColor = completed === 0 ? "#8892b0" : completed < 5 ? "#00d4ff" : completed < 10 ? "#00ff9d" : completed < 15 ? "#a855f7" : "#f59e0b"
+  const cardRef = useRef<HTMLDivElement>(null)
 
+  const handleDownload = async () => {
+  if (!cardRef.current) return
+  try {
+    const dataUrl = await toPng(cardRef.current, { backgroundColor: "#020c1b" })
+    const link = document.createElement("a")
+    link.download = `CyberAware-ID-${student.name.replace(/\s+/g, "-")}.png`
+    link.href = dataUrl
+    link.click()
+  } catch (err) {
+    console.error("Failed to download Cyber ID:", err)
+  }
+}
   
 
 
@@ -1372,7 +1385,7 @@ function CyberIDPage({ student }: { student: StudentData }) {
       <SectionHeader title="Your Digital Cyber ID" subtitle="A verified record of your cybersecurity awareness journey." tag="Cyber ID" />
 
       <div className="relative max-w-2xl mx-auto">
-        <div className="glass-strong rounded-3xl overflow-hidden" style={{ border: `2px solid ${badgeColor}44` }}>
+        <div ref={cardRef} className="glass-strong rounded-3xl overflow-hidden" style={{ border: `2px solid ${badgeColor}44` }}>
           {/* Header bar */}
           <div className="p-6 pb-4" style={{ background: `linear-gradient(135deg, ${badgeColor}22, transparent)` }}>
             <div className="flex items-start justify-between">
@@ -1447,14 +1460,6 @@ function CyberIDPage({ student }: { student: StudentData }) {
                 <div className="text-[#8892b0] text-xs mt-2">This ID verifies completion of cybersecurity<br />awareness training on this platform.</div>
               </div>
               <div className="text-right">
-                <div className="text-[#8892b0] text-xs font-mono-jet mb-2">VERIFICATION QR</div>
-                <QRCodeSVG
-  value={`CyberAware Certificate\nName: ${student.name}\nLevel: ${getLevelName(student.xp)}\nLessons Completed: ${completed}/18\nXP: ${student.xp}\nIssued: ${student.joinDate}`}
-  size={160}
-  bgColor="#ffffff"
-  fgColor="#000000"
-  marginSize={4}
-/>
               </div>
             </div>
           </div>
@@ -1462,8 +1467,8 @@ function CyberIDPage({ student }: { student: StudentData }) {
 
         {/* Download button */}
         <div className="text-center mt-6">
-          <GlowButton variant="secondary">
-            <Download className="w-4 h-4" /> Download Cyber ID
+          <GlowButton variant="secondary" onClick={handleDownload}>
+          <Download className="w-4 h-4" /> Download Cyber ID
           </GlowButton>
         </div>
       </div>
