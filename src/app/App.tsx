@@ -1449,11 +1449,12 @@ function CyberIDPage({ student }: { student: StudentData }) {
               <div className="text-right">
                 <div className="text-[#8892b0] text-xs font-mono-jet mb-2">VERIFICATION QR</div>
                 <QRCodeSVG
-  value={`CyberAware Certificate\nName: ${student.name}\nLevel: ${getLevelName(student.xp)}\nLessons Completed: ${completed}/18\nXP: ${student.xp}\nIssued: ${student.joinDate}`}
-  size={160}
-  bgColor="#ffffff"
-  fgColor="#000000"
-/>
+                 value="Hello CyberAware"
+                 size={160}
+                 bgColor="#ffffff"
+                 fgColor="#000000"
+                 marginSize={4}
+                />
               </div>
             </div>
           </div>
